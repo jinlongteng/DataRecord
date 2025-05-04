@@ -234,8 +234,8 @@
             generateData() {
                 const newData = {
                     pH: this._randomInRange(6.0, 8.5, 0.2),
-                    TDS: this._randomInRange(200, 800, 20),
-                    Flow: this._randomInRange(10, 15, 0.5)
+                    TDS: this._randomInRange(15, 25, 1),
+                    Flow: this._randomInRange(10, 20, 0.5)
                 };
 
                 // 记录历史数据（保留最近300条）
