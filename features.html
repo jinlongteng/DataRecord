@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成功案例 - 上海数工域控有限责任公司</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+</head>
+
+<body class="bg-gray-50">
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="hidden md:flex space-x-8">
+                        <a href="index.html"
+                            class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">首页</a>
+                        <a href="cases.html"
+                            class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">成功案例</a>
+                        <a href="about.html"
+                            class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">关于我们</a>
+                        <a href="contact.html"
+                            class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">联系我们</a>
+                        <a href="features.html"
+                            class="bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium">功能展示</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-12 px-4">
+
+        <div class="container mx-auto p-8">
+            <button id="readButton"
+                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none">
+                ModBus读取数据演示
+            </button>
+            <div id="result" class="mt-4 text-gray-700"></div>
+        </div>
+        <div class="container mx-auto p-8">
+            <button id="calcResultButton"
+                class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none">不良率统计示例</button>
+            <div id="calcResultChart" class="w-full h-96 bg-white p-6 rounded-lg shadow-md"></div>
+        </div>
+    </main>
+    <script>
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min) + min);
+        }
+        // 计算不良率统计示例
+        function calcResult() {
+            var myChart = echarts.init(document.getElementById('calcResultChart'));
+            var option = {
+                title: {
+                    text: '不良率统计',
+                    subtext: '数据来源于虚拟',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [
+                    {
+                        name: '不良率类型',
+                        type: 'pie',
+                        radius: '50%',
+                        data: [
+                            { value: getRandomInt(3, 10), name: '位置度不良' },
+                            { value: getRandomInt(4, 10), name: '注塑不良' },
+                            { value: getRandomInt(5, 10), name: '外观不良' },
+                            { value: getRandomInt(6, 10), name: 'PIN高不良' },
+                            { value: getRandomInt(50, 100), name: '合格数量' }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        }
+        // modbus读取示例
+        document.addEventListener('DOMContentLoaded', function () {
+            const readButton = document.getElementById('readButton');
+            const resultDiv = document.getElementById('result');
+
+            readButton.addEventListener('click', async function () {
+                try {
+                    // 由于浏览器环境安全限制，无法直接使用串口，这里仅为示例逻辑
+                    // 实际应用中需要在 Node.js 环境运行
+                    // 以下是模拟 Modbus 通信逻辑
+                    resultDiv.textContent = '正在读取数据...';
+                    // 模拟读取数据
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const mockData = [1, 2, 3, 4, 5];
+                    resultDiv.textContent = `读取到的数据: ${mockData.join(', ')}`;
+                } catch (error) {
+                    resultDiv.textContent = `读取数据时出错: ${error.message}`;
+                }
+            });
+        });
+        document.getElementById('calcResultButton').addEventListener('click', function () {
+            calcResult();
+        });
+    </script>
+</body>
+
+</html>

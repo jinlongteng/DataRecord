@@ -3,142 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>上海数工域控有限责任公司</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-        }
-
-        /* 导航栏样式 */
-        nav {
-            background-color: #333;
-            padding: 1rem;
-        }
-
-        nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-        }
-
-        nav li {
-            margin: 0 1rem;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            transition: background-color 0.3s;
-        }
-
-        nav a:hover,
-        nav a.active {
-            background-color: #555;
-            border-radius: 4px;
-        }
-
-        /* 内容区域 */
-        .content-section {
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            display: none; /* 默认隐藏所有内容块 */
-        }
-
-        .content-section.active {
-            display: block; /* 显示当前内容块 */
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            nav ul {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            nav li {
-                margin: 0.5rem 0;
-            }
-        }
-    </style>
+    <title>首页 - 上海数工域控有限责任公司</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- 导航栏 -->
-    <nav>
-        <ul>
-            <li><a href="#home" class="active">首页</a></li>
-            <li><a href="#about">关于我们</a></li>
-            <li><a href="#contact">联系我们</a></li>
-        </ul>
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <!-- 桌面导航 -->
+                    <div class="hidden md:flex space-x-8">
+                        <a href="index.html" class="bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium">首页</a>
+                        <a href="cases.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">成功案例</a>
+                        <a href="about.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">关于我们</a>
+                        <a href="contact.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">联系我们</a>
+                        <a href="features.html" class="text-gray-300 hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium">功能展示</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <!-- 内容区域 -->
-    <section id="home" class="content-section active">
-        <h1>欢迎访问我们的网站</h1>
-        <p>这里是首页内容，展示网站的主要信息和功能。</p>
-        <img src="https://picsum.photos/600/300" alt="示例图片" style="width: 100%; margin: 1rem 0;">
-    </section>
-
-    <section id="about" class="content-section">
-        <h2>关于我们</h2>
-        <p>我们致力于通过创新技术提供最佳解决方案。</p>
-        <ul>
-            <li>成立时间：2020年</li>
-            <li>团队规模：50+ 专业人员</li>
-            <li>服务领域：数据采集、视觉检测、机器人应用</li>
-        </ul>
-    </section>
-
-    <section id="contact" class="content-section">
-        <h2>联系我们</h2>
-        <form style="max-width: 500px;">
-            <div style="margin: 1rem 0;">
-                <label>姓名：</label>
-                <label>滕先生</label>
+    <!-- 主页内容 -->
+    <main class="max-w-6xl mx-auto py-8 px-4">
+        <!-- 欢迎横幅 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <img src="https://picsum.photos/1200/400" alt="企业形象图" class="w-full h-64 object-cover">
+            <div class="p-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">智能制造的创新引领者</h1>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                    上海数工域控有限责任公司专注于工业自动化领域，致力于为制造业提供智能化解决方案。
+                    我们的技术涵盖数据采集、机器视觉和工业机器人集成，助力企业实现数字化转型。
+                </p>
             </div>
-            <div style="margin: 1rem 0;">
-                <label>邮箱：</label>
-                <label>359532150@qq.com</label>
+        </div>
+
+        <!-- 特色服务 -->
+        <!-- 在文档3的"特色服务"区块后添加以下内容 -->
+<!-- 成功案例 -->
+<div class="bg-white rounded-lg shadow-md p-8 my-8">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8">成功案例</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+        <!-- 数据采集案例 -->
+        <div class="bg-blue-50 p-6 rounded-lg transition-transform hover:scale-105">
+            <div class="flex items-center mb-4">
+                <div class="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-blue-800">数据采集系统</h3>
             </div>
-            <div style="margin: 1rem 0;">
-                <label>电话：</label>
-                <label>18961389539</label>
+            <p class="font-semibold text-gray-700 mb-2">宁德时代新能源项目</p>
+            <p class="text-gray-600 leading-relaxed">
+                • 部署2000+数据采集点<br>
+                • 实现毫秒级实时监控<br>
+                • 工艺不良率下降18%<br>
+                • 年节约成本1200万元
+            </p>
+        </div>
+
+        <!-- 视觉检测案例 -->
+        <div class="bg-green-50 p-6 rounded-lg transition-transform hover:scale-105">
+            <div class="flex items-center mb-4">
+                <div class="bg-green-600 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-green-800">视觉检测方案</h3>
             </div>
-            <button type="submit" style="padding: 0.5rem 2rem; background-color: #333; color: white; border: none;">提交</button>
-        </form>
-    </section>
+            <p class="font-semibold text-gray-700 mb-2">比亚迪冲压件检测</p>
+            <p class="text-gray-600 leading-relaxed">
+                • 0.02mm检测精度<br>
+                • 检测速度1200件/分钟<br>
+                • 误检率＜0.01%<br>
+                • 替代20名质检员
+            </p>
+        </div>
 
-    <script>
-        // 导航切换功能
-        document.querySelectorAll('nav a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // 移除所有active类
-                document.querySelectorAll('nav a, .content-section').forEach(element => {
-                    element.classList.remove('active');
-                });
+        <!-- 机器人集成案例 -->
+        <div class="bg-purple-50 p-6 rounded-lg transition-transform hover:scale-105">
+            <div class="flex items-center mb-4">
+                <div class="bg-purple-600 w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-purple-800">机器人集成</h3>
+            </div>
+            <p class="font-semibold text-gray-700 mb-2">格力电器装配线</p>
+            <p class="text-gray-600 leading-relaxed">
+                • 部署32台协作机器人<br>
+                • 生产节拍提升25%<br>
+                • 兼容6种产品型号<br>
+                • ROI周期缩短至14个月
+            </p>
+        </div>
+    </div>
+</div>
 
-                // 添加当前active类
-                this.classList.add('active');
-                const targetId = this.getAttribute('href').substring(1);
-                document.getElementById(targetId).classList.add('active');
-            });
-        });
+        <!-- 最新动态 -->
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">最新动态</h2>
+            <div class="space-y-6">
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="text-lg font-semibold mb-2">成功签约某新能源龙头企业</h3>
+                    <p class="text-gray-600 text-sm">2023年12月 - 为其部署整套智能质检系统</p>
+                </div>
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="text-lg font-semibold mb-2">通过ISO 9001质量体系认证</h3>
+                    <p class="text-gray-600 text-sm">2023年11月 - 质量管理体系获得国际认可</p>
+                </div>
+            </div>
+        </div>
+    </main>
 
-        // 首次加载时显示初始hash
-        window.addEventListener('DOMContentLoaded', () => {
-            const hash = window.location.hash.substring(1) || 'home';
-            document.querySelector(`[href="#${hash}"]`).click();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
