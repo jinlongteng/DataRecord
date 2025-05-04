@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单页面示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            background-color: #333;
+            padding: 1rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav li {
+            margin: 0 1rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            background-color: #555;
+            border-radius: 4px;
+        }
+
+        /* 内容区域 */
+        .content-section {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: none; /* 默认隐藏所有内容块 */
+        }
+
+        .content-section.active {
+            display: block; /* 显示当前内容块 */
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav li {
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <ul>
+            <li><a href="#home" class="active">首页</a></li>
+            <li><a href="#about">关于我们</a></li>
+            <li><a href="#contact">联系我们</a></li>
+        </ul>
+    </nav>
+
+    <!-- 内容区域 -->
+    <section id="home" class="content-section active">
+        <h1>欢迎访问我们的网站</h1>
+        <p>这里是首页内容，展示网站的主要信息和功能。</p>
+        <img src="https://picsum.photos/600/300" alt="示例图片" style="width: 100%; margin: 1rem 0;">
+    </section>
+
+    <section id="about" class="content-section">
+        <h2>关于我们</h2>
+        <p>我们致力于通过创新技术提供最佳解决方案。</p>
+        <ul>
+            <li>成立时间：2020年</li>
+            <li>团队规模：50+ 专业人员</li>
+            <li>服务领域：Web开发、移动应用、云服务</li>
+        </ul>
+    </section>
+
+    <section id="contact" class="content-section">
+        <h2>联系我们</h2>
+        <form style="max-width: 500px;">
+            <div style="margin: 1rem 0;">
+                <label>姓名：</label>
+                <input type="text" style="width: 100%; padding: 0.5rem;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>邮箱：</label>
+                <input type="email" style="width: 100%; padding: 0.5rem;">
+            </div>
+            <div style="margin: 1rem 0;">
+                <label>留言：</label>
+                <textarea style="width: 100%; height: 100px; padding: 0.5rem;"></textarea>
+            </div>
+            <button type="submit" style="padding: 0.5rem 2rem; background-color: #333; color: white; border: none;">提交</button>
+        </form>
+    </section>
+
+    <script>
+        // 导航切换功能
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 移除所有active类
+                document.querySelectorAll('nav a, .content-section').forEach(element => {
+                    element.classList.remove('active');
+                });
+
+                // 添加当前active类
+                this.classList.add('active');
+                const targetId = this.getAttribute('href').substring(1);
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // 首次加载时显示初始hash
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1) || 'home';
+            document.querySelector(`[href="#${hash}"]`).click();
+        });
+    </script>
+</body>
+</html>
