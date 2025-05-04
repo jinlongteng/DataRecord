@@ -324,7 +324,7 @@
 
             // 更新仪表指针
             updateGauge(data.pH, 0, 14, document.getElementById('phNeedle'));
-            updateGauge(data.TDS, 0, 1000, document.getElementById('tdsNeedle'));
+            updateGauge(data.TDS, 0, 25, document.getElementById('tdsNeedle'));
             updateGauge(data.Flow, 0, 20, document.getElementById('flowNeedle'));
 
             // 更新趋势图表
@@ -356,7 +356,7 @@
             // 输入验证
             const ranges = {
                 pH: { min: 0, max: 14 },
-                TDS: { min: 0, max: 1000 },
+                TDS: { min: 0, max: 25 },
                 Flow: { min: 0, max: 20 }
             };
 
