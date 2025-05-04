@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成功案例 - 上海数工域控有限责任公司</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .gauge {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            background: conic-gradient(#10b981 0% 33%,
+                    #f59e0b 33% 66%,
+                    #ef4444 66% 100%);
+            mask-image: radial-gradient(transparent 55%, #000 56%);
+        }
+
+        .gauge-needle {
+            width: 3px;
+            height: 45%;
+            background: #374151;
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom;
+            transition: transform 0.5s ease;
+        }
+
+        .toast {
+            min-width: 250px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <!-- 桌面导航 -->
+                    <div class="space-x-8">
+                        <a href="index.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">首页</a>
+                        <a href="cases.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">案例</a>
+                        <a href="about.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">关于</a>
+                        <a href="contact.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">联系</a>
+                        <a href="features.html"
+                            class="bg-gray-700 text-white px-1 py-2 rounded-md text-sm font-medium">展示</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid py-4">
+        <!-- 实时数据仪表盘 -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body py-4">
+                        <div class="row g-4 text-center">
+                            <div class="col-6 col-md-4">
+                                <div class="gauge mx-auto">
+                                    <div class="gauge-needle" id="phNeedle"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="h5 text-muted mb-1">pH值</div>
+                                    <div class="h3 font-bold" id="phValue">7.2</div>
+                                    <span class="badge bg-success">正常</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="gauge mx-auto">
+                                    <div class="gauge-needle" id="tdsNeedle"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="h5 text-muted mb-1">溶解性固体</div>
+                                    <div class="h3 font-bold" id="tdsValue">480</div>
+                                    <span class="badge bg-success">正常</span>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="gauge mx-auto">
+                                    <div class="gauge-needle" id="flowNeedle"></div>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="h5 text-muted mb-1">流量</div>
+                                    <div class="h3 font-bold" id="flowValue">12.5</div>
+                                    <span class="badge bg-success">正常</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="row g-4">
+            <!-- 趋势图表 -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="card-title mb-0">水质趋势分析</h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div id="mainChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 报警信息 -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-danger h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">实时报警</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="alarmList" class="p-3" style="max-height: 400px; overflow-y: auto;">
+                            <!-- 报警内容示例 -->
+                            <div class="alert alert-danger d-flex align-items-center mb-2 p-2">
+                                <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">pH值超标告警</div>
+                                    <div class="text-muted small">当前值：8.5 | 时间：14:30:23</div>
+                                </div>
+                                <span class="badge bg-danger ms-2">紧急</span>
+                            </div>
+
+                            <div class="alert alert-warning d-flex align-items-center mb-2 p-2">
+                                <i class="fas fa-exclamation-circle me-2 fs-5"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">溶解性固体超标</div>
+                                    <div class="text-muted small">当前值：850ppm | 时间：14:28:45</div>
+                                </div>
+                                <span class="badge bg-warning ms-2">警告</span>
+                            </div>
+
+                            <div class="alert alert-info d-flex align-items-center mb-2 p-2">
+                                <i class="fas fa-info-circle me-2 fs-5"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">流量异常波动</div>
+                                    <div class="text-muted small">当前值：18.2m³/h | 时间：14:25:12</div>
+                                </div>
+                                <span class="badge bg-info ms-2">注意</span>
+                            </div>
+
+                            <div class="alert alert-success d-flex align-items-center mb-2 p-2">
+                                <i class="fas fa-check-circle me-2 fs-5"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">系统恢复正常</div>
+                                    <div class="text-muted small">pH值已恢复至7.1 | 时间：14:20:05</div>
+                                </div>
+                                <span class="badge bg-success ms-2">恢复</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据录入表单 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">手动数据录入</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="dataForm" class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">检测时间</label>
+                                <input type="datetime-local" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">参数类型</label>
+                                <select class="form-select" required>
+                                    <option value="pH">pH值</option>
+                                    <option value="TDS">溶解性固体</option>
+                                    <option value="Flow">流量</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">检测值</label>
+                                <input type="number" step="0.01" class="form-control" required>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>提交
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        // 仪表盘控制
+        function updateGauge(value, min, max, element) {
+            const range = max - min;
+            const rotation = ((value - min) / range) * 180 - 135;
+            element.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        // 数据模拟器
+        const DataSimulator = {
+            currentData: {
+                pH: 7.2,
+                TDS: 480,
+                Flow: 12.5
+            },
+            historyData: {
+                pH: [],
+                TDS: [],
+                Flow: []
+            },
+
+            generateData() {
+                const newData = {
+                    pH: this._randomInRange(6.0, 8.5, 0.2),
+                    TDS: this._randomInRange(200, 800, 20),
+                    Flow: this._randomInRange(10, 15, 0.5)
+                };
+
+                // 记录历史数据（保留最近300条）
+                const timestamp = Date.now();
+                ['pH', 'TDS', 'Flow'].forEach(param => {
+                    this.historyData[param].push({
+                        timestamp,
+                        value: newData[param]
+                    });
+                    if (this.historyData[param].length > 300) {
+                        this.historyData[param].shift();
+                    }
+                });
+
+                return newData;
+            },
+
+            _randomInRange(min, max, step) {
+                const steps = (max - min) / step;
+                return min + (Math.floor(Math.random() * steps) * step);
+            }
+        };
+
+        // ECharts初始化
+        const chartDom = document.getElementById('mainChart');
+        const myChart = echarts.init(chartDom);
+        const chartOption = {
+            tooltip: { trigger: 'axis' },
+            legend: {
+                data: ['pH值', '溶解性固体', '流量'],
+                bottom: 10
+            },
+            xAxis: {
+                type: 'time',
+                axisLabel: {
+                    formatter: (value) => {
+                        return echarts.format.formatTime('HH:mm', value);
+                    }
+                }
+            },
+            yAxis: { type: 'value' },
+            dataZoom: [{
+                type: 'inside',
+                start: 70,
+                end: 100
+            }],
+            series: [
+                {
+                    name: 'pH值',
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: { width: 2, color: '#3b82f6' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#bfdbfe' },
+                            { offset: 1, color: '#eff6ff' }
+                        ])
+                    }
+                },
+                {
+                    name: '溶解性固体',
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: { width: 2, color: '#10b981' }
+                },
+                {
+                    name: '流量',
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: { width: 2, color: '#f59e0b' }
+                }
+            ]
+        };
+
+        // 更新仪表显示
+        function updateDashboard() {
+            const data = DataSimulator.generateData();
+
+            // 更新数值显示
+            document.getElementById('phValue').textContent = data.pH.toFixed(1);
+            document.getElementById('tdsValue').textContent = data.TDS;
+            document.getElementById('flowValue').textContent = data.Flow.toFixed(1);
+
+            // 更新仪表指针
+            updateGauge(data.pH, 0, 14, document.getElementById('phNeedle'));
+            updateGauge(data.TDS, 0, 1000, document.getElementById('tdsNeedle'));
+            updateGauge(data.Flow, 0, 20, document.getElementById('flowNeedle'));
+
+            // 更新趋势图表
+            const now = Date.now();
+            chartOption.xAxis.min = now - 60000; // 显示最近1小时数据
+            chartOption.xAxis.max = now;
+
+            chartOption.series[0].data = DataSimulator.historyData.pH.map(d => [d.timestamp, d.value]);
+            chartOption.series[1].data = DataSimulator.historyData.TDS.map(d => [d.timestamp, d.value]);
+            chartOption.series[2].data = DataSimulator.historyData.Flow.map(d => [d.timestamp, d.value]);
+
+            myChart.setOption(chartOption, true);
+        }
+
+        // 定时更新数据
+        setInterval(() => {
+            updateDashboard();
+        }, 1000);
+
+        // 表单提交处理
+        document.getElementById('dataForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = {
+                time: this.elements[0].value,
+                parameter: this.elements[1].value,
+                value: parseFloat(this.elements[2].value)
+            };
+
+            // 输入验证
+            const ranges = {
+                pH: { min: 0, max: 14 },
+                TDS: { min: 0, max: 1000 },
+                Flow: { min: 0, max: 20 }
+            };
+
+            if (formData.value < ranges[formData.parameter].min ||
+                formData.value > ranges[formData.parameter].max) {
+                showToast('输入值超出合理范围！', 'danger');
+                return;
+            }
+
+            showToast('数据提交成功！', 'success');
+            this.reset();
+        });
+
+        // 显示Toast通知
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+            new bootstrap.Toast(toast).show();
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 初始化
+        updateDashboard();
+        myChart.setOption(chartOption);
+    </script>
+</body>
+
+</html>

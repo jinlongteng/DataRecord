@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成功案例 - 上海数工域控有限责任公司</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+       .echart-container {
+            height: 100%;
+            width: 100%;
+            min-height: 200px;
+        }
+
+       .data-blink {
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* 移动端优化样式 */
+        @media (max-width: 640px) {
+           .echart-container {
+                min-height: 150px;
+            }
+
+           .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+
+           .nav-links a {
+                padding: 4px 12px;
+            }
+
+           .system-params.echart-container {
+                height: 120px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <!-- 桌面导航 -->
+                    <div class="space-x-8">
+                        <a href="index.html" class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">首页</a>
+                        <a href="cases.html" class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">案例</a>
+                        <a href="about.html" class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">关于</a>
+                        <a href="contact.html" class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">联系</a>
+                        <a href="features.html" class="bg-gray-700 text-white px-1 py-2 rounded-md text-sm font-medium">展示</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="bg-gray-100 min-h-screen pt-16">
+        <img class="w-full h-36 md:h-48 object-cover mx-auto my-8" src="https://picsum.photos/400/300"
+             alt="锅炉示意图">
+        <div class="p-6 text-center">
+            <h2 class="text-lg md:text-xl font-bold mb-2">锅炉状态演示</h2>
+            <p class="text-gray-700 mb-4">实时监控数据</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 p-6">
+            <!-- 温度监测 -->
+            <div class="bg-white rounded-xl p-4">
+                <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">温度监测</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="furnaceGauge" class="h-36 md:h-48 echart-container"></div>
+                    <div id="convectionGauge" class="h-36 md:h-48 echart-container"></div>
+                </div>
+                <div class="mt-4 text-sm text-gray-600 text-center">
+                    最后更新：<span id="updateTime" class="font-mono"></span>
+                </div>
+            </div>
+
+            <!-- 静电除尘器 -->
+            <div class="bg-white rounded-xl p-4">
+                <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">静电除尘器 (ESP-1)</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm text-gray-600">电流</span>
+                        <span class="text-sm text-blue-600 font-bold esp-current">66.16 mA</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm text-gray-600">电压</span>
+                        <span class="text-sm text-green-600 font-bold esp-voltage">21.10 V</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm text-gray-600">温度</span>
+                        <span class="text-sm text-red-600 font-bold esp-temp">223.79°C</span>
+                    </div>
+                </div>
+                <div id="espComparisonChart" class="h-36 echart-container"></div>
+            </div>
+
+            <!-- 系统运行参数 -->
+            <div class="bg-white rounded-xl p-4 system-params">
+                <h2 class="text-lg md:text-xl font-semibold text-gray-700 mb-4">系统运行参数</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="pressureGauge" class="h-32 echart-container"></div>
+                    <div id="frequencyGauge" class="h-32 echart-container"></div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm text-gray-500 mb-2">烟气温度</div>
+                        <div class="text-xl font-bold text-purple-600">488.97°C</div>
+                    </div>
+                    <div id="paramTrendChart" class="h-32 echart-container"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 数据模拟器
+        class DataSimulator {
+            constructor() {
+                this.trendData = Array(10).fill(2.5);
+            }
+
+            randomRange(min, max, precision = 2) {
+                return +(Math.random() * (max - min) + min).toFixed(precision);
+            }
+
+            getGaugeData() {
+                return {
+                    furnace: this.randomRange(800, 830),
+                    convection: this.randomRange(300, 330),
+                    pressure: this.randomRange(2.4, 2.7, 3),
+                    frequency: this.randomRange(49.5, 50.5, 1)
+                };
+            }
+
+            getGaugeTitle() {
+                return {
+                    furnace: '炉温(℃)',
+                    convection: '对流温度(℃)',
+                    pressure: '压力(MPa)',
+                    frequency: '频率(Hz)'
+                };
+            }
+
+            getEspData() {
+                return {
+                    current: this.randomRange(65, 67, 2),
+                    voltage: this.randomRange(20.5, 22.5, 2),
+                    temp: this.randomRange(220, 225, 2)
+                };
+            }
+
+            updateTrend() {
+                this.trendData.shift();
+                this.trendData.push(this.randomRange(2.4, 2.6, 3));
+                return [...this.trendData];
+            }
+        }
+
+        const simulator = new DataSimulator();
+        let charts = {};
+        let updateInterval;
+
+        // 初始化图表
+        function initCharts() {
+            const initGauge = (id, title, max, min, color) => {
+                const chart = echarts.init(document.getElementById(id));
+                chart.setOption({
+                    series: [{
+                        type: 'gauge',
+                        title: {
+                            show: true,
+                            text: title,
+                            offsetCenter: [0, '70%'],
+                            color: '#666',
+                            fontSize: window.innerWidth < 640? 8 : 10 // 移动端更小字体
+                        },
+                        detail: {
+                            formatter: '{value}',
+                            fontSize: window.innerWidth < 640? 10 : 12,
+                            offsetCenter: [0, '35%'],
+                            color: '#333'
+                        },
+                        min: min,
+                        max: max,
+                        radius: '80%',
+                        center: ['50%', '55%'],
+                        axisLine: {
+                            lineStyle: {
+                                color: [[1, color]],
+                                width: 18
+                            }
+                        },
+                        progress: { show: true, width: 18 },
+                        axisTick: { show: false },
+                        splitLine: { show: false },
+                        axisLabel: { show: false },
+                        anchor: { show: false }
+                    }]
+                });
+                return chart;
+            };
+
+            charts.furnace = initGauge('furnaceGauge', '炉温(℃)', 830, 800, '#FF6B6B');
+            charts.convection = initGauge('convectionGauge', '对流温度(℃)', 330, 300, '#4DABF7');
+            charts.pressure = initGauge('pressureGauge', '压力(MPa)', 2.7, 2.4, '#37A2FF');
+            charts.frequency = initGauge('frequencyGauge', '频率(Hz)', 50.5, 49.5, '#FF9F7F');
+
+            // 趋势图
+            charts.trend = echarts.init(document.getElementById('paramTrendChart'));
+            charts.trend.setOption({
+                title: { text: '压力趋势', left: 'center', textStyle: { fontSize: window.innerWidth < 640? 10 : 12 } },
+                tooltip: { trigger: 'axis' },
+                xAxis: { type: 'category', data: [], axisLabel: { fontSize: 8 } },
+                yAxis: { type: 'value', min: 2.3, max: 2.8, axisLabel: { fontSize: 8 } },
+                grid: { top: '25%', bottom: '15%' },
+                series: [{
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: { width: 2, color: '#37A2FF' },
+                    data: []
+                }]
+            });
+
+            // ESP对比图
+            charts.esp = echarts.init(document.getElementById('espComparisonChart'));
+            charts.esp.setOption({
+                title: { text: '参数对比', left: 'center', textStyle: { fontSize: window.innerWidth < 640? 10 : 12 } },
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['电流', '电压', '温度'], bottom: 0, itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 8 } },
+                xAxis: { type: 'category', data: ['当前值', '标准值'], axisLabel: { fontSize: 8 } },
+                yAxis: { type: 'value', axisLabel: { fontSize: 8 } },
+                grid: { bottom: '20%' },
+                series: [
+                    { name: '电流', type: 'bar', itemStyle: { color: '#4DABF7' }, data: [] },
+                    { name: '电压', type: 'bar', itemStyle: { color: '#69DB7C' }, data: [] },
+                    { name: '温度', type: 'bar', itemStyle: { color: '#FF6B6B' }, data: [] }
+                ]
+            });
+        }
+
+        // 更新数据
+        function updateAll() {
+            const gaugeData = simulator.getGaugeData();
+            const espData = simulator.getEspData();
+            const trendData = simulator.updateTrend();
+            const gaugeTitle = simulator.getGaugeTitle();
+            // 更新仪表盘
+            ['furnace', 'convection', 'pressure', 'frequency'].forEach(key => {
+                charts[key].setOption({ series: [{ data: [{ value: gaugeData[key], name: gaugeTitle[key] }] }] });
+            });
+
+            // 更新趋势图
+            charts.trend.setOption({
+                xAxis: { data: trendData.map((_, i) => `${i * 2}分钟前`) },
+                series: [{ data: trendData }]
+            });
+
+            // 更新ESP数据
+            document.querySelectorAll('.esp-current, .esp-voltage, .esp-temp').forEach((el, index) => {
+                el.textContent = [
+                    `${espData.current} mA`,
+                    `${espData.voltage} V`,
+                    `${espData.temp}°C`
+                ][index];
+            });
+
+            charts.esp.setOption({
+                series: [
+                    { data: [espData.current, 65] },
+                    { data: [espData.voltage, 21] },
+                    { data: [espData.temp, 220] }
+                ]
+            });
+
+            // 更新时间
+            document.getElementById('updateTime').textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+        }
+
+        // 事件监听
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateAll();
+            updateInterval = setInterval(updateAll, 2000);
+        });
+
+        // 响应式调整
+        window.addEventListener('resize', () => {
+            Object.values(charts).forEach(chart => chart.resize());
+        });
+
+        // 页面隐藏时暂停更新
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                clearInterval(updateInterval);
+            } else {
+                updateInterval = setInterval(updateAll, 2000);
+            }
+        });
+    </script>
+</body>
+
+</html>
