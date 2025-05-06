@@ -1,0 +1,156 @@
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'; // 也可用ECharts，此处示例用Recharts
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+const DeviceMonitor = () => {
+  // 设备基础信息
+  const deviceInfo = {
+    id: 'DEVICE-001',
+    name: '智能压缩机',
+    type: '工业级',
+    location: '生产线A-1号工位'
+  };
+
+  // 实时数据状态
+  const [realTimeData, setRealTimeData] = useState({
+    temperature: 25, // ℃
+    pressure: 0.8,   // MPa
+    speed: 1500,     // RPM
+    status: 'stopped', // running/error/stopped
+    timestamp: new Date().toLocaleTimeString()
+  });
+
+  // 历史温度数据（用于折线图）
+  const [historyData, setHistoryData] = useState([{ time: '00:00', temp: 25 }]);
+
+  // 模拟实时数据更新（替代真实设备通信）
+  useEffect(() => {
+    const updateData = () => {
+      // 生成随机数据（模拟设备实时上报）
+      const newTemp = Math.max(20, realTimeData.temperature + (Math.random() - 0.5) * 5); // 温度波动±5℃
+      const newStatus = () => {
+        if (newTemp > 80) return 'error'; // 温度过高触发故障
+        if (realTimeData.status === 'running') return 'running';
+        return 'stopped';
+      };
+
+      setRealTimeData({
+        ...realTimeData,
+        temperature: newTemp,
+        pressure: realTimeData.pressure + (Math.random() - 0.5) * 0.1, // 压力波动±0.1MPa
+        speed: realTimeData.status === 'running' ? 1500 + Math.random() * 200 : 0, // 停机时转速为0
+        status: newStatus(),
+        timestamp: new Date().toLocaleTimeString()
+      });
+
+      // 更新历史数据（保留最近10条）
+      setHistoryData(prev => [...prev.slice(1, 10), { time: realTimeData.timestamp.split(' ')[1], temp: newTemp }]);
+    };
+
+    // 启动模拟定时器（每秒更新一次）
+    const timer = setInterval(updateData, 1000);
+    return () => clearInterval(timer); // 组件卸载时清除定时器
+  }, []);
+
+  // 设备状态颜色映射
+  const statusColor = {
+    running: '#4CAF50', // 绿色
+    error: '#F44336',  // 红色
+    stopped: '#9E9E9E' // 灰色
+  };
+
+  // 模拟控制指令发送（实际需对接后端API或设备协议）
+  const handleControl = (action) => {
+    if (action === 'start') {
+      setRealTimeData(prev => ({ ...prev, status: 'running' }));
+    } else {
+      setRealTimeData(prev => ({ ...prev, status: 'stopped' }));
+    }
+    console.log(`发送指令：${action}`); // 此处可替换为真实通信逻辑（如WebSocket/MQTT）
+  };
+
+  return (
+    <div className="container mt-4">
+      <h2 className="mb-4">设备监控面板 - {deviceInfo.name}</h2>
+
+      {/* 设备基础信息 */}
+      <div className="card">
+        <div className="card-body">
+          <div className="row">
+            <div className="col-md-4">
+              <p className="fw-bold">设备ID：{deviceInfo.id}</p>
+              <p>类型：{deviceInfo.type}</p>
+              <p>位置：{deviceInfo.location}</p>
+            </div>
+            <div className="col-md-4">
+              <p className="fw-bold">实时状态：</p>
+              <div className="d-flex align-items-center">
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: statusColor[realTimeData.status]
+                  }}
+                />
+                <span className={`ms-2 ${realTimeData.status === 'error' ? 'text-danger' : ''}`}>
+                  {realTimeData.status === 'running' ? '运行中' : realTimeData.status === 'error' ? '故障' : '已停机'}
+                </span>
+              </div>
+            </div>
+            <div className="col-md-4 text-end">
+              {/* 控制按钮 */}
+              <button
+                className={`btn ${realTimeData.status === 'running' ? 'btn-success' : 'btn-secondary'} me-2`}
+                onClick={() => handleControl('start')}
+                disabled={realTimeData.status === 'running'}
+              >
+                启动设备
+              </button>
+              <button
+                className={`btn ${realTimeData.status === 'stopped' ? 'btn-secondary' : 'btn-danger'}`}
+                onClick={() => handleControl('stop')}
+                disabled={realTimeData.status === 'stopped'}
+              >
+                停止设备
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 实时数据卡片 */}
+      <div className="card mt-4">
+        <div className="card-body">
+          <div className="row">
+            <div className="col-md-4">
+              <h5>实时数据</h5>
+              <ul className="list-unstyled">
+                <li>温度：<span className={realTimeData.temperature > 80 ? 'text-danger' : ''}>{realTimeData.temperature.toFixed(1)}℃</span></li>
+                <li>压力：{realTimeData.pressure.toFixed(2)}MPa</li>
+                <li>转速：{realTimeData.speed}RPM</li>
+                <li>更新时间：{realTimeData.timestamp}</li>
+              </ul>
+            </div>
+            <div className="col-md-8">
+              <h5>温度趋势</h5>
+              <div style={{ height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={historyData}>
+                    <XAxis dataKey="time" />
+                    <YAxis label={{ value: '温度 (℃)', angle: -90, position: 'insideLeft' }} />
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="temp" stroke="#8884d8" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DeviceMonitor;
