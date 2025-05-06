@@ -189,7 +189,6 @@
                 scene.add(light);
 
                 // 事件监听
-                window.addEventListener('click', onClick);
                 window.addEventListener('resize', onResize);
             }
 
@@ -203,7 +202,7 @@
                 const cube = new THREE.Mesh(geometry, material);
 
                 // 计算位置：每栋楼沿X轴排列，每层沿Y轴排列，每户沿Z轴排列
-                cube.position.x = building * 5; // 栋间距5米
+                cube.position.x =-10+ building * 5; // 栋间距5米
                 cube.position.y = floor * 2 + 1; // 层高2米
                 cube.position.z = unit * buildingParams.spacing -
                     (buildingParams.units * buildingParams.spacing) / 2;
@@ -215,32 +214,6 @@
                 };
 
                 scene.add(cube);
-            }
-
-            function onClick(event) {
-                // 转换鼠标坐标到WebGL坐标系
-                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-                // 射线检测
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(scene.children);
-
-                if (intersects.length > 0) {
-                    const clickedObject = intersects[0].object;
-
-                    // 遍历查找点击的户
-                    for (let b = 0; b < buildings.length; b++) {
-                        for (let f = 0; f < buildings[b].length; f++) {
-                            for (let u = 0; u < buildings[b][f].length; u++) {
-                                if (buildings[b][f][u].mesh === clickedObject) {
-                                    toggleLight(b, f, u);
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
             }
 
             function toggleLightClick() {
