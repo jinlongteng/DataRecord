@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成功案例 - 上海数工域控有限责任公司</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .echart-container {
+            height: 100%;
+            width: 100%;
+            min-height: 200px;
+        }
+
+        .data-blink {
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* 移动端优化样式 */
+        @media (max-width: 640px) {
+            .echart-container {
+                min-height: 150px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+
+            .nav-links a {
+                padding: 4px 12px;
+            }
+
+            .system-params.echart-container {
+                height: 120px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <!-- 桌面导航 -->
+                    <div class="space-x-8">
+                        <a href="index.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">首页</a>
+                        <a href="cases.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">案例</a>
+                        <a href="about.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">关于</a>
+                        <a href="contact.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">联系</a>
+                        <a href="features.html"
+                            class="bg-gray-700 text-white px-1 py-2 rounded-md text-sm font-medium">展示</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <!-- 控制面板 -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">楼栋选择</label>
+                    <select id="buildingSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                focus:border-blue-500 focus:ring-blue-500">
+                        <option value="0">栋1</option>
+                        <option value="1">栋2</option>
+                        <option value="2">栋3</option>
+                        <option value="3">栋4</option>
+                    </select>
+                </div>
+
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">楼层选择</label>
+                    <select id="floorSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                focus:border-blue-500 focus:ring-blue-500">
+                        <option value="0">层1</option>
+                        <option value="1">层2</option>
+                        <option value="2">层3</option>
+                        <option value="3">层4</option>
+                        <option value="4">层5</option>
+                        <option value="5">层6</option>
+                        <option value="6">层7</option>
+                        <option value="7">层8</option>
+                    </select>
+                </div>
+
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">住户选择</label>
+                    <select id="unitSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                                focus:border-blue-500 focus:ring-blue-500">
+                        <option value="0">户1</option>
+                        <option value="1">户2</option>
+                        <option value="2">户3</option>
+                        <option value="3">户4</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="toggleLightClick()" class="inline-flex items-center px-4 py-2 border border-transparent 
+                                text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-power-off mr-2"></i>
+                        开关当前户
+                    </button>
+
+                    <button onclick="toggleAll()" class="inline-flex items-center px-4 py-2 border border-transparent 
+                                text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        一键总控
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Three.js 画布容器 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div id="canvas-container" ></div>
+        </div>
+
+        <script>
+            let renderer, camera, scene, raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+            const buildings = []; // 存储所有户的二维数组[栋][层][户]
+            const buildingParams = {
+                buildings: 4,   // 4栋
+                floors: 8,      // 每栋8层
+                units: 4,       // 每层4户
+                spacing: 1.2    // 户间距
+            };
+
+            init();
+            animate();
+
+            function init() {
+                // 初始化渲染器
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                // 初始化场景和相机
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(15, 30, 30);
+                camera.lookAt(0, 0, 0);
+
+                // 创建地面
+                const ground = new THREE.Mesh(
+                    new THREE.PlaneGeometry(100, 100),
+                    new THREE.MeshPhongMaterial({ color: 0x444444 })
+                );
+                ground.rotation.x = -Math.PI / 2;
+                scene.add(ground);
+                scene.add(new THREE.AmbientLight(0x404040));
+
+                // 创建四栋楼
+                for (let b = 0; b < buildingParams.buildings; b++) {
+                    buildings[b] = [];
+                    for (let f = 0; f < buildingParams.floors; f++) {
+                        buildings[b][f] = [];
+                        for (let u = 0; u < buildingParams.units; u++) {
+                            createUnit(b, f, u);
+                        }
+                    }
+                }
+
+                // 添加平行光
+                const light = new THREE.DirectionalLight(0xffffff, 0.5);
+                light.position.set(10, 20, 10);
+                scene.add(light);
+
+                // 事件监听
+                window.addEventListener('click', onClick);
+                window.addEventListener('resize', onResize);
+            }
+
+            function createUnit(building, floor, unit) {
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x666666, // 默认关闭状态
+                    emissive: 0x000000,
+                });
+
+                const cube = new THREE.Mesh(geometry, material);
+
+                // 计算位置：每栋楼沿X轴排列，每层沿Y轴排列，每户沿Z轴排列
+                cube.position.x = building * 5; // 栋间距5米
+                cube.position.y = floor * 2 + 1; // 层高2米
+                cube.position.z = unit * buildingParams.spacing -
+                    (buildingParams.units * buildingParams.spacing) / 2;
+
+                // 存储到数组
+                buildings[building][floor][unit] = {
+                    mesh: cube,
+                    isOn: false
+                };
+
+                scene.add(cube);
+            }
+
+            function onClick(event) {
+                // 转换鼠标坐标到WebGL坐标系
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                // 射线检测
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(scene.children);
+
+                if (intersects.length > 0) {
+                    const clickedObject = intersects[0].object;
+
+                    // 遍历查找点击的户
+                    for (let b = 0; b < buildings.length; b++) {
+                        for (let f = 0; f < buildings[b].length; f++) {
+                            for (let u = 0; u < buildings[b][f].length; u++) {
+                                if (buildings[b][f][u].mesh === clickedObject) {
+                                    toggleLight(b, f, u);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            function toggleLightClick() {
+                const building = parseInt(document.getElementById('buildingSelect').value);
+                const floor = parseInt(document.getElementById('floorSelect').value);
+                const unit = parseInt(document.getElementById('unitSelect').value);
+
+                toggleLight(building, floor, unit);
+            }
+
+            function toggleLight(b, f, u) {
+                const unit = buildings[b][f][u];
+                unit.isOn = !unit.isOn;
+
+                unit.mesh.material.emissive.setHex(unit.isOn ? 0xffff00 : 0x000000);
+                unit.mesh.material.color.setHex(unit.isOn ? 0xeeee00 : 0x666666);
+            }
+
+            function toggleAll() {
+                const currentState = !buildings[0][0][0].isOn; // 取反第一个户的状态
+
+                buildings.forEach(building => {
+                    building.forEach(floor => {
+                        floor.forEach(unit => {
+                            unit.isOn = currentState;
+                            unit.mesh.material.emissive.setHex(currentState ? 0xffff00 : 0x000000);
+                            unit.mesh.material.color.setHex(currentState ? 0xeeee00 : 0x666666);
+                        });
+                    });
+                });
+            }
+
+            function onResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+        </script>
+    </main>
+
+</body>
+
+</html>
