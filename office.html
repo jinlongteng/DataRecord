@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成功案例 - 上海数工域控有限责任公司</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <!-- 桌面导航 -->
+                    <div class="space-x-8">
+                        <a href="index.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">首页</a>
+                        <a href="cases.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">案例</a>
+                        <a href="about.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">关于</a>
+                        <a href="contact.html"
+                            class="text-gray-300 hover:bg-gray-700 px-1 py-2 rounded-md text-sm font-medium">联系</a>
+                        <a href="features.html"
+                            class="bg-gray-700 text-white px-1 py-2 rounded-md text-sm font-medium">展示</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="bg-gray-100 min-h-screen pt-16">
+        <div id="app">
+            <div class="max-w-full mx-auto space-y-2">
+                <!-- 报警提示 -->
+                <div v-if="activeAlerts.length"
+                    class="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full shadow-lg z-50 text-sm">
+                    ⚠️ 当前报警: {{ activeAlerts.length }}
+                </div>
+
+                <!-- 阈值设置面板 -->
+                <div v-if="showSettings"
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white p-6 rounded-xl w-full max-w-md space-y-4">
+                        <h3 class="text-xl font-semibold">报警阈值设置</h3>
+                        <div class="space-y-3">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">温度 (°C)</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="number" v-model.number="thresholds.temperature.min"
+                                        class="p-2 border rounded-lg focus:ring-2 focus:ring-blue-300"
+                                        placeholder="最低值">
+                                    <input type="number" v-model.number="thresholds.temperature.max"
+                                        class="p-2 border rounded-lg focus:ring-2 focus:ring-blue-300"
+                                        placeholder="最高值">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">湿度 (%)</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="number" v-model.number="thresholds.humidity.min"
+                                        class="p-2 border rounded-lg focus:ring-2 focus:ring-blue-300"
+                                        placeholder="最低值">
+                                    <input type="number" v-model.number="thresholds.humidity.max"
+                                        class="p-2 border rounded-lg focus:ring-2 focus:ring-blue-300"
+                                        placeholder="最高值">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">噪音 (dB)</label>
+                                <input type="number" v-model.number="thresholds.noise.max"
+                                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300"
+                                    placeholder="最大允许值">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="saveSettings"
+                                class="flex-1 p-2 bg-blue-500 text-white rounded-lg hover:opacity-90">
+                                保存
+                            </button>
+                            <button @click="showSettings = false"
+                                class="flex-1 p-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 工具栏 -->
+                <div class="flex flex-wrap gap-2 p-3 bg-white rounded-xl shadow-sm">
+                    <select v-model="selectedTimeRange" @change="fetchData"
+                        class="flex-1 min-w-[120px] p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-300">
+                        <option value="2h">2小时</option>
+                        <option value="24h">24小时</option>
+                        <option value="7d">7天</option>
+                    </select>
+                    <button @click="toggleFullscreen"
+                        class="flex-1 min-w-[120px] p-2 bg-blue-500 text-white rounded-lg hover:opacity-90 text-sm">
+                        全屏
+                    </button>
+                    <button @click="showSettings = true"
+                        class="flex-1 min-w-[120px] p-2 bg-blue-500 text-white rounded-lg hover:opacity-90 text-sm">
+                        阈值设置
+                    </button>
+                    <button @click="exportDashboard"
+                        class="flex-1 min-w-[120px] p-2 bg-blue-500 text-white rounded-lg hover:opacity-90 text-sm">
+                        导出CSV
+                    </button>
+                </div>
+
+                <!-- 传感器卡片 -->
+                <div class="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-6">
+                    <div v-for="sensor in sensors" :key="sensor.title"
+                        class="p-4 bg-white rounded-xl shadow-sm border-l-4" :style="`border-color: ${sensor.color}`">
+                        <h3 class="text-gray-500 text-sm font-medium">{{ sensor.title }}</h3>
+                        <div class="text-2xl font-bold my-1">{{ sensor.value }}</div>
+                        <div :class="sensor.statusClass" class="text-sm">{{ sensor.statusText }}</div>
+                    </div>
+                    <div class="p-4 bg-white rounded-xl shadow-sm border-l-4" style="border-color: #3b82f6">
+                        <h3 class="text-gray-500 text-sm font-medium">当前功率 (W)</h3>
+                        <div class="text-2xl font-bold my-1">{{ currentData.currentPower.toFixed(0) }}</div>
+                        <div :class="currentData.currentPower > 2000 ? 'text-red-500' : 'text-green-500'"
+                            class="text-sm">
+                            {{ currentData.currentPower > 2000 ? '高负荷' : '正常' }}
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white rounded-xl shadow-sm border-l-4" style="border-color: #3b82f6">
+                        <h3 class="text-gray-500 text-sm font-medium">本月电费 (元)</h3>
+                        <div class="text-2xl font-bold my-1">{{ monthlyElectricityCost.toFixed(2) }}</div>
+                        <div class="text-sm text-gray-500">本月累计</div>
+                    </div>
+                </div>
+
+                <!-- 主内容区 -->
+                <div class="grid gap-2 md:grid-cols-[1fr]">
+                    <!-- 右侧面板 -->
+                    <div class="space-y-2">
+                        <!-- 设备控制 -->
+                        <div class="bg-white p-4 rounded-xl shadow-sm">
+                            <h3 class="text-lg font-semibold mb-3">设备控制</h3>
+                            <div class="space-y-2">
+                                <div v-for="device in devices" :key="device.id" @click="toggleDevice(device)"
+                                    class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors group"
+                                    :style="`border-left: 4px solid ${device.buttonColor}`">
+                                    <div>
+                                        <h4 class="font-medium text-gray-700">{{ device.name }}</h4>
+                                        <small class="text-gray-500 text-xs">最后操作: {{ formatTime(device.lastUpdate)
+                                            }}</small>
+                                    </div>
+                                    <span class="px-3 py-1 text-sm rounded-full text-white transition-colors"
+                                        :style="`background: ${device.buttonColor}`">
+                                        {{ device.buttonText }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 报警记录 -->
+                        <div class="bg-white p-4 rounded-xl shadow-sm">
+                            <h3 class="text-lg font-semibold">报警记录</h3>
+                            <button @click="clearAlerts" class="text-blue-500 text-sm hover:opacity-80">
+                                清除记录
+                            </button>
+                            <div class="space-y-2 max-h-96 overflow-y-auto">
+                                <div v-for="alert in activeAlerts" :key="alert.id" class="p-3 rounded-lg border-l-4"
+                                    :class="{
+                                         'bg-red-50 border-red-500': alert.level === 'critical',
+                                         'bg-orange-50 border-orange-500': alert.level === 'warning'
+                                     }">
+                                    <div class="text-xs text-gray-500 mb-1">{{ formatTime(alert.timestamp) }}</div>
+                                    <div class="text-sm font-medium text-gray-700">{{ alert.message }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <script>
+        const { createApp } = Vue;
+
+        class DataGenerator {
+            constructor() {
+                this.deviceStates = {
+                    acOn: true,
+                    lightsOn: true,
+                    dehumidifierOn: false
+                };
+                this.baseValues = { temperature: 22, humidity: 40, noise: 55, light: 300 };
+                this.electricityPrice = 0.8;
+                this.dailyEnergy = JSON.parse(localStorage.getItem('dailyEnergy')) || {};
+                this.lastUpdateTime = null;
+            }
+
+            generateRealTime() {
+                const now = Date.now();
+                const hour = new Date(now).getHours();
+                const isDaytime = hour > 6 && hour < 20;
+                const isWorkingHour = hour > 8 && hour < 19;
+                const isWeekend = [0, 6].includes(new Date().getDay());
+
+                // 温度生成逻辑
+                const tempBase = this.deviceStates.acOn ? 22 : 25;
+                const tempVariation = Math.sin(now / 3600000) * 3 + (isWorkingHour ? Math.random() * 1.5 : Math.random() * 0.5);
+
+                // 湿度生成逻辑
+                let humidityBase = this.deviceStates.acOn ? 40 : 50;
+                if (this.deviceStates.dehumidifierOn) {
+                    humidityBase = Math.max(humidityBase - 15, 20);
+                }
+                const humidityVariation = Math.cos(now / 3600000) * 5 + (isWorkingHour ? -Math.random() * 3 : Math.random());
+
+                // 功率计算
+                let basePower = 500;
+                if (this.deviceStates.acOn) basePower += 1200;
+                if (this.deviceStates.lightsOn) basePower += 300;
+                if (this.deviceStates.dehumidifierOn) basePower += 500;
+                const currentPower = basePower + Math.random() * 200;
+
+                // 能耗累计
+                if (this.lastUpdateTime) {
+                    const duration = (now - this.lastUpdateTime) / 3600000;
+                    const today = luxon.DateTime.now().toFormat('yyyy-MM-dd');
+                    this.dailyEnergy[today] = (this.dailyEnergy[today] || 0) + (currentPower * duration / 1000);
+                    localStorage.setItem('dailyEnergy', JSON.stringify(this.dailyEnergy));
+                }
+                this.lastUpdateTime = now;
+
+                return {
+                    timestamp: now,
+                    temperature: tempBase + tempVariation,
+                    humidity: humidityBase + humidityVariation,
+                    noise: (isWeekend ? 40 : 55) + (isWorkingHour ?
+                        (Math.random() * 15 + (Math.random() > 0.95 ? 30 : 0)) :
+                        Math.random() * 5),
+                    light: isDaytime ?
+                        300 + Math.sin(now / 60000) * 200 :
+                        50 + Math.random() * 30,
+                    power: Math.random() > 0.997 ? 0 : 1,
+                    currentPower: currentPower
+                };
+            }
+
+            generateHistory(range) {
+                const now = Date.now();
+                let interval, points;
+
+                switch (range) {
+                    case '2h':
+                        points = 7200;
+                        interval = 1000;
+                        break;
+                    case '24h':
+                        points = 8640;
+                        interval = 10000;
+                        break;
+                    case '7d':
+                        points = 10080;
+                        interval = 60000;
+                        break;
+                    default:
+                        points = 7200;
+                        interval = 1000;
+                }
+
+                return Array.from({ length: points }, (_, i) => {
+                    const ts = now - (points - i - 1) * interval;
+                    const hour = new Date(ts).getHours();
+                    const isWorkingHour = hour > 8 && hour < 19;
+
+                    return {
+                        timestamp: ts,
+                        temperature: 24 + Math.sin(ts / 3600000) * 4 + (isWorkingHour ? Math.random() * 1.2 : Math.random() * 0.4),
+                        humidity: 45 + Math.cos(ts / 3600000) * 6 + (isWorkingHour ? -Math.random() * 2 : Math.random()),
+                        noise: 50 + (isWorkingHour ? Math.random() * 12 : Math.random() * 5) + (Math.random() > 0.98 ? 25 : 0),
+                        light: hour > 6 && hour < 19 ? 300 + Math.sin(ts / 60000) * 180 : 50 + Math.random() * 30
+                    };
+                });
+            }
+        }
+
+        createApp({
+            data() {
+                return {
+                    selectedTimeRange: '2h',
+                    dataGenerator: new DataGenerator(),
+                    currentData: {
+                        temperature: 22,
+                        humidity: 40,
+                        noise: 55,
+                        light: 300,
+                        currentPower: 0
+                    },
+                    historyData: [],
+                    devices: [
+                        {
+                            id: 1,
+                            name: '中央空调',
+                            status: 'active',
+                            lastUpdate: Date.now(),
+                            get buttonColor() { return this.status === 'active' ? '#10b981' : '#ef4444' },
+                            get buttonText() { return this.status === 'active' ? '运行中' : '已关闭' }
+                        },
+                        {
+                            id: 2,
+                            name: '智能照明',
+                            status: 'active',
+                            lastUpdate: Date.now(),
+                            get buttonColor() { return this.status === 'active' ? '#10b981' : '#ef4444' },
+                            get buttonText() { return this.status === 'active' ? '开启中' : '已关闭' }
+                        },
+                        {
+                            id: 3,
+                            name: '除湿器',
+                            status: 'inactive',
+                            lastUpdate: Date.now(),
+                            get buttonColor() { return this.status === 'active' ? '#10b981' : '#ef4444' },
+                            get buttonText() { return this.status === 'active' ? '运行中' : '已关闭' }
+                        }
+                    ],
+                    activeAlerts: [],
+                    showSettings: false,
+                    thresholds: {
+                        temperature: { min: 16, max: 30 },
+                        humidity: { min: 20, max: 80 },
+                        noise: { max: 85 }
+                    },
+                    updateInterval: null
+                }
+            },
+
+            computed: {
+                sensors() {
+                    return [
+                        {
+                            title: '温度 (°C)',
+                            value: this.currentData.temperature.toFixed(1),
+                            color: this.tempStatus.color,
+                            statusText: this.tempStatus.text,
+                            statusClass: this.tempStatus.text === '正常' ? 'text-green-500' : 'text-red-500'
+                        },
+                        {
+                            title: '湿度 (%)',
+                            value: this.currentData.humidity.toFixed(1),
+                            color: this.humidityStatus.color,
+                            statusText: this.humidityStatus.text,
+                            statusClass: this.humidityStatus.text === '正常' ? 'text-green-500' : 'text-red-500'
+                        },
+                        {
+                            title: '噪音 (dB)',
+                            value: this.currentData.noise.toFixed(1),
+                            color: '#8b5cf6',
+                            statusText: this.currentData.noise > this.thresholds.noise.max ? '超标' : '正常',
+                            statusClass: this.currentData.noise > this.thresholds.noise.max ? 'text-red-500' : 'text-green-500'
+                        },
+                        {
+                            title: '光照 (lux)',
+                            value: this.currentData.light.toFixed(0),
+                            color: '#f59e0b',
+                            statusText: this.currentData.light > 500 ? '明亮' : '正常',
+                            statusClass: this.currentData.light > 500 ? 'text-yellow-500' : 'text-green-500'
+                        }
+                    ]
+                },
+                tempStatus() {
+                    const t = this.currentData.temperature;
+                    if (t > this.thresholds.temperature.max || t < this.thresholds.temperature.min)
+                        return { text: '异常', color: '#ef4444' };
+                    if (t > this.thresholds.temperature.max - 2 || t < this.thresholds.temperature.min + 2)
+                        return { text: '临界', color: '#f59e0b' };
+                    return { text: '正常', color: '#10b981' };
+                },
+                humidityStatus() {
+                    const h = this.currentData.humidity;
+                    if (h > this.thresholds.humidity.max || h < this.thresholds.humidity.min)
+                        return { text: '异常', color: '#ef4444' };
+                    if (h > this.thresholds.humidity.max - 10 || h < this.thresholds.humidity.min + 10)
+                        return { text: '临界', color: '#f59e0b' };
+                    return { text: '正常', color: '#10b981' };
+                },
+                monthlyElectricityCost() {
+                    const currentMonth = luxon.DateTime.now().toFormat('yyyy-MM');
+                    return Object.entries(this.dataGenerator.dailyEnergy)
+                        .filter(([date]) => date.startsWith(currentMonth))
+                        .reduce((sum, [_, energy]) => sum + energy, 0) * this.dataGenerator.electricityPrice;
+                }
+            },
+
+            methods: {
+                async fetchData() {
+                    this.historyData = this.dataGenerator.generateHistory(this.selectedTimeRange);
+                    let interval;
+                    switch (this.selectedTimeRange) {
+                        case '2h': interval = 1000; break;
+                        case '24h': interval = 10000; break;
+                        case '7d': interval = 60000; break;
+                        default: interval = 1000;
+                    }
+
+                    this.updateInterval = setInterval(() => {
+                        const newData = this.dataGenerator.generateRealTime();
+                        this.historyData.push(newData);
+
+                        const maxPoints = {
+                            '2h': 7200,
+                            '24h': 8640,
+                            '7d': 10080
+                        }[this.selectedTimeRange];
+
+                        if (this.historyData.length > maxPoints) {
+                            this.historyData = this.historyData.slice(-maxPoints);
+                        }
+                    }, interval);
+                },
+
+                clearAlerts() {
+                    this.activeAlerts = [];
+                },
+
+                startRealtime() {
+                    const update = async () => {
+                        const newData = this.dataGenerator.generateRealTime();
+                        this.currentData = {
+                            temperature: this.lerp(this.currentData.temperature, newData.temperature),
+                            humidity: this.lerp(this.currentData.humidity, newData.humidity),
+                            noise: this.lerp(this.currentData.noise, newData.noise),
+                            light: this.lerp(this.currentData.light, newData.light),
+                            currentPower: newData.currentPower,
+                            power: newData.power
+                        };
+                        this.checkAlerts();
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        requestAnimationFrame(update);
+                    };
+                    update();
+                },
+
+                lerp(a, b, factor = 0.1) {
+                    return a + (b - a) * factor;
+                },
+
+                checkAlerts() {
+                    const t = this.currentData.temperature;
+                    const h = this.currentData.humidity;
+                    const n = this.currentData.noise;
+                    const th = this.thresholds;
+
+                    if (t > th.temperature.max || t < th.temperature.min) {
+                        this.addAlert(`温度异常: ${t.toFixed(1)}°C (允许范围: ${th.temperature.min}-${th.temperature.max}°C)`, 'critical');
+                    } else if (t > th.temperature.max - 2 || t < th.temperature.min + 2) {
+                        this.addAlert(`温度临界: ${t.toFixed(1)}°C`, 'warning');
+                    }
+
+                    if (h > th.humidity.max || h < th.humidity.min) {
+                        this.addAlert(`湿度异常: ${h.toFixed(1)}% (允许范围: ${th.humidity.min}-${th.humidity.max}%)`, 'critical');
+                    } else if (h > th.humidity.max - 10 || h < th.humidity.min + 10) {
+                        this.addAlert(`湿度临界: ${h.toFixed(1)}%`, 'warning');
+                    }
+
+                    if (n > th.noise.max) {
+                        this.addAlert(`噪音超标: ${n.toFixed(1)}dB (最大允许: ${th.noise.max}dB)`, 'critical');
+                    } else if (n > th.noise.max - 15) {
+                        this.addAlert(`噪音偏高: ${n.toFixed(1)}dB`, 'warning');
+                    }
+
+                    if (this.currentData.power === 0) {
+                        this.addAlert('电源故障! 启用备用电源', 'critical');
+                    }
+
+                    const ac = this.devices[0];
+                    if (ac.status === 'active' && t > th.temperature.max) {
+                        this.addAlert('空调制冷不足', 'warning');
+                    }
+                },
+
+                addAlert(msg, level = 'warning') {
+                    if (!this.activeAlerts.some(a => a.message === msg)) {
+                        this.activeAlerts.unshift({
+                            id: Date.now(),
+                            message: msg,
+                            timestamp: Date.now(),
+                            level
+                        });
+                        if (this.activeAlerts.length > 8) this.activeAlerts.pop();
+                    }
+                },
+
+                toggleDevice(device) {
+                    device.status = device.status === 'active' ? 'inactive' : 'active';
+                    device.lastUpdate = Date.now();
+                    this.dataGenerator.deviceStates.acOn = this.devices[0].status === 'active';
+                    this.dataGenerator.deviceStates.lightsOn = this.devices[1].status === 'active';
+                    this.dataGenerator.deviceStates.dehumidifierOn = this.devices[2].status === 'active';
+                    this.addAlert(`${device.name} 已${device.status === 'active' ? '开启' : '关闭'}`, 'warning');
+                },
+
+                formatTime(ts) {
+                    return luxon.DateTime.fromMillis(ts).toFormat('HH:mm');
+                },
+
+                toggleFullscreen() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        document.exitFullscreen();
+                    }
+                },
+
+                exportDashboard() {
+                    const csvContent = [
+                        ['阈值设置'],
+                        ['类型', '最小值', '最大值'],
+                        ['温度', this.thresholds.temperature.min, this.thresholds.temperature.max],
+                        ['湿度', this.thresholds.humidity.min, this.thresholds.humidity.max],
+                        ['噪音', 'N/A', this.thresholds.noise.max],
+                        [],
+                        ['历史数据（' + this.selectedTimeRange + '）'],
+                        ['时间', '温度(°C)', '湿度(%)', '噪音(dB)', '光照(lux)', '功率(W)'],
+                        ...this.historyData.map(d => [
+                            luxon.DateTime.fromMillis(d.timestamp).toFormat('yyyy-LL-dd HH:mm:ss'),
+                            d.temperature.toFixed(1),
+                            d.humidity.toFixed(1),
+                            d.noise.toFixed(1),
+                            d.light.toFixed(0),
+                            d.currentPower?.toFixed(0) || ''
+                        ]),
+                        [],
+                        ['报警记录'],
+                        ['时间', '级别', '详细信息'],
+                        ...this.activeAlerts.map(alert => [
+                            luxon.DateTime.fromMillis(alert.timestamp).toFormat('yyyy-LL-dd HH:mm:ss'),
+                            alert.level.toUpperCase(),
+                            `"${alert.message.replace(/"/g, '""')}"`
+                        ]),
+                        [],
+                        ['能耗统计'],
+                        ['日期', '耗电量(kWh)', '电费(元)'],
+                        ...Object.entries(this.dataGenerator.dailyEnergy).map(([date, energy]) => [
+                            date,
+                            energy.toFixed(2),
+                            (energy * this.dataGenerator.electricityPrice).toFixed(2)
+                        ])
+                    ]
+                        .map(row => row.join(','))
+                        .join('\n');
+
+                    const blob = new Blob(["\ufeff" + csvContent], {
+                        type: 'text/csv;charset=utf-8;'
+                    });
+                    saveAs(blob, `环境监控_${luxon.DateTime.now().toFormat('yyyy-LL-dd_HH-mm-ss')}.csv`);
+                },
+
+                saveSettings() {
+                    if (this.thresholds.temperature.min >= this.thresholds.temperature.max) {
+                        alert('温度最小值不能大于等于最大值');
+                        return;
+                    }
+                    if (this.thresholds.humidity.min >= this.thresholds.humidity.max) {
+                        alert('湿度最小值不能大于等于最大值');
+                        return;
+                    }
+                    if (this.thresholds.noise.max <= 0) {
+                        alert('噪音阈值必须大于0');
+                        return;
+                    }
+
+                    localStorage.setItem('thresholds', JSON.stringify(this.thresholds));
+                    this.showSettings = false;
+                    this.addAlert('报警阈值已更新', 'warning');
+                }
+            },
+            watch: {
+                selectedTimeRange: {
+                    immediate: true,
+                    handler(newVal) {
+                        this.fetchData();
+                    }
+                }
+            },
+            mounted() {
+                const saved = localStorage.getItem('thresholds');
+                if (saved) {
+                    try {
+                        this.thresholds = JSON.parse(saved);
+                    } catch (e) {
+                        console.warn('本地存储数据损坏，使用默认阈值');
+                    }
+                }
+
+                this.startRealtime();
+                this.fetchData();
+            },
+
+            beforeUnmount() {
+                clearInterval(this.updateInterval);
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>
