@@ -129,7 +129,7 @@
         // 数据模拟器
         class DataSimulator {
             constructor() {
-                this.trendData = Array(10).fill(2.5);
+                this.trendData = Array(20).fill(2.5);
             }
 
             randomRange(min, max, precision = 2) {
@@ -138,9 +138,9 @@
 
             getGaugeData() {
                 return {
-                    furnace: this.randomRange(800, 830),
-                    convection: this.randomRange(300, 330),
-                    pressure: this.randomRange(2.4, 2.7, 3),
+                    furnace: this.randomRange(810, 820),
+                    convection: this.randomRange(316, 319),
+                    pressure: this.randomRange(2.5, 2.6, 3),
                     frequency: this.randomRange(49.5, 50.5, 1)
                 };
             }
@@ -164,7 +164,7 @@
 
             updateTrend() {
                 this.trendData.shift();
-                this.trendData.push(this.randomRange(2.4, 2.6, 3));
+                this.trendData.push(this.randomRange(2.5, 2.6, 3));
                 return [...this.trendData];
             }
         }
@@ -213,10 +213,10 @@
                 return chart;
             };
 
-            charts.furnace = initGauge('furnaceGauge', '炉温(℃)', 830, 800, '#FF6B6B');
-            charts.convection = initGauge('convectionGauge', '对流温度(℃)', 330, 300, '#4DABF7');
-            charts.pressure = initGauge('pressureGauge', '压力(MPa)', 2.7, 2.4, '#37A2FF');
-            charts.frequency = initGauge('frequencyGauge', '频率(Hz)', 50.5, 49.5, '#FF9F7F');
+            charts.furnace = initGauge('furnaceGauge', '炉温(℃)', 840, 790, '#FF6B6B');
+            charts.convection = initGauge('convectionGauge', '对流温度(℃)', 350, 280, '#4DABF7');
+            charts.pressure = initGauge('pressureGauge', '压力(MPa)', 2.9, 2.2, '#37A2FF');
+            charts.frequency = initGauge('frequencyGauge', '频率(Hz)', 52.5, 47.5, '#FF9F7F');
 
             // 趋势图
             charts.trend = echarts.init(document.getElementById('paramTrendChart'));
@@ -224,7 +224,7 @@
                 title: { text: '压力趋势', left: 'center', textStyle: { fontSize: window.innerWidth < 640? 10 : 12 } },
                 tooltip: { trigger: 'axis' },
                 xAxis: { type: 'category', data: [], axisLabel: { fontSize: 8 } },
-                yAxis: { type: 'value', min: 2.3, max: 2.8, axisLabel: { fontSize: 8 } },
+                yAxis: { type: 'value', min: 2.2, max: 2.9, axisLabel: { fontSize: 8 } },
                 grid: { top: '25%', bottom: '15%' },
                 series: [{
                     type: 'line',

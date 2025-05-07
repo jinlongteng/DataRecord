@@ -15,9 +15,11 @@
             height: 120px;
             border-radius: 50%;
             position: relative;
-            background: conic-gradient(#10b981 0% 33%,
-                    #f59e0b 33% 66%,
-                    #ef4444 66% 100%);
+            background: conic-gradient(
+                    #10b981 0% 10%,
+                    #f59e0b 10% 50%,
+                    #ef4444 50% 90%,
+                    #10b981 90% 100%);
             mask-image: radial-gradient(transparent 55%, #000 56%);
         }
 
@@ -233,9 +235,9 @@
 
             generateData() {
                 const newData = {
-                    pH: this._randomInRange(6.0, 8.5, 0.2),
-                    TDS: this._randomInRange(15, 25, 1),
-                    Flow: this._randomInRange(10, 20, 0.5)
+                    pH: this._randomInRange(6, 8, 0.2),
+                    TDS: this._randomInRange(18, 20, 1),
+                    Flow: this._randomInRange(14, 16, 0.5)
                 };
 
                 // 记录历史数据（保留最近300条）
@@ -323,7 +325,7 @@
             document.getElementById('flowValue').textContent = data.Flow.toFixed(1);
 
             // 更新仪表指针
-            updateGauge(data.pH, 0, 14, document.getElementById('phNeedle'));
+            updateGauge(data.pH, 2, 9, document.getElementById('phNeedle'));
             updateGauge(data.TDS, 0, 25, document.getElementById('tdsNeedle'));
             updateGauge(data.Flow, 0, 20, document.getElementById('flowNeedle'));
 
