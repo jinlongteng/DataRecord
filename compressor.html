@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gbk.js@1.0.3/dist/gbk.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <title>工业设备监控面板</title>
     <style>
         .status-dot {
             width: 20px;
@@ -132,15 +131,16 @@
                             <i class="fa-solid fa-play"></i> 启动设备
                         </button>
                         <button id="stop-btn"
-                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mr-2" disabled>
+                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded mr-2">
                             <i class="fa-solid fa-stop"></i> 停止设备
                         </button>
                         <button id="settings-btn"
                             class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2">
                             <i class="fa-solid fa-cog"></i> 参数设置
                         </button>
+                    </p>
                 </div>
-                </p>
+
             </div>
 
             <!-- 实时数据卡片 -->
@@ -223,7 +223,11 @@
             </div>
             <!-- 报警记录 -->
             <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-3">报警记录</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 mb-3">报警记录</h2>
+                    <button id="alarm_clear_btn" onclick="clearAlarmRecords()"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2">清除报警记录</button>
+                </div>
                 <table id="alarm-table" class="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr>
@@ -333,8 +337,8 @@
 
                 // 生成新数据
                 realTimeData = {
-                    temperature: Math.max(20, realTimeData.temperature + (Math.random() - 0.5) * 5),
-                    pressure: Math.max(0, realTimeData.pressure + (Math.random() - 0.5) * 0.2),
+                    temperature: Math.max(20, realTimeData.temperature + (Math.random() - 0.5) * 2),
+                    pressure: Math.max(0, realTimeData.pressure + (Math.random() - 0.7) * 0.1),
                     speed: realTimeData.status === 'running' ? 1500 + Math.random() * 200 : 0,
                     timestamp: now.toLocaleString(),
                     status: realTimeData.status
@@ -428,22 +432,39 @@
             `).join('');
             }
 
+            function clearAlarmRecords() {
+                alarmRecords = [];
+                updateAlarmTable();
+                setStatusText('stopped');
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            }
+
             function confirmAlarm(index) {
                 alarmRecords.splice(index, 1);
                 updateAlarmTable();
             }
-
+            function setStatusText(status) {
+                realTimeData.status = status;
+                statusText.textContent = {
+                    running: '运行中',
+                    error: '故障',
+                    stopped: '已停机'
+                }[status];
+            }
             // 设备控制
             function handleControl(action) {
+                alert(`设备${action === 'start' ? '启动' : '停止'}成功！`);
                 if (action === 'start') {
-                    realTimeData.status = 'running';
+                    setStatusText('running');
                     runningInterval = setInterval(() => {
                         totalRunningTime++;
                         updateUptime();
                     }, 1000);
-                } else {
-                    realTimeData.status = 'stopped';
-                    clearInterval(runningInterval);
+                }
+                else {
+                    setStatusText('stopped');
+
                 }
                 updateData();
             }
